@@ -3,11 +3,18 @@ import bodyParser from "body-parser";
 import peliculas from "./routes/peliculas.js";
 
 import cors from "cors";
-import sqlite3 from "sqlite3";
-import { createDatabase } from "./functions.js";
+
+//const cors = require("cors");
 
 const app = express();
+const PORT = 5000;
 
+/*app.use(
+  cors({
+    origin: "http://127.0.0.1:3000",
+    optionsSuccessStatus: 200,
+  })
+);*/
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/peliculas", peliculas);
@@ -19,25 +26,7 @@ app.get("/", (req, res) => {
   res.send("Hola mundo");
 });
 
-var server = app.listen(5000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
-  let db = new sqlite3.Database(
-    "./movies.db",
-    sqlite3.OPEN_READWRITE,
-    (err) => {
-      if (err && err.code == "SQLITE_CANTOPEN") {
-        db.close();
-        console.log("Iniciando la creación de la base de datos");
-        createDatabase();
-        return;
-      } else if (err) {
-        console.log("Error" + err);
-        exit(1);
-      } else {
-        console.log("Despliegue de la base de datos ejecutado con éxito");
-      }
-    }
-  );
-  console.log("Servidor escuchando en http://%s:%s", host, port);
-});
+//Mensaje de que todo funciona correctamente
+app.listen(PORT, () =>
+  console.log(`Servidor corriendo en el puerto: http://localhost:${PORT}`)
+);

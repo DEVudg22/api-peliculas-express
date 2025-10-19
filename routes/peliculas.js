@@ -1,128 +1,66 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
-import sqlite3 from "sqlite3";
 const router = express.Router();
+
+//Peliculas de prueba
+let movies = [
+  {
+    id: "1",
+    name: "Los Tipos Malos 2",
+    year: 2025,
+    sinopsis:
+      "Un genial equipo de animales que no respetan la ley, los ahora muy reformados Tipos Malos, se esfuerzan (mucho, muchísimo) en ser buenos, pero se ven envueltos involuntariamente en un golpe de envergadura mundial planeado por un inesperado grupo de criminales: las Tipas Malas.",
+    cover: "https://pics.filmaffinity.com/the_bad_guys_2-780518548-mmed.jpg",
+  },
+  {
+    id: "2",
+    name: "Gran Turismo",
+    year: 2023,
+    sinopsis:
+      "Un adolescente jugaba a 'Gran Turismo', videojuego en el que ganó una serie de competiciones patrocinadas por Nissan, y le sirvió de trampolín para acabar convirtiéndose en un piloto de carreras profesional. ",
+    cover: "https://pics.filmaffinity.com/gran_turismo-126311186-mmed.jpg",
+  },
+];
 
 // Obtener las películas
 router.get("/", (req, res) => {
-  let db = new sqlite3.Database("./movies.db");
-  db.all("SELECT * FROM peliculas", function (err, rows) {
-    let peliculas = JSON.stringify(rows);
-    res.end(peliculas);
-  });
+  res.send(movies);
 });
 
 //Añadir peliculas
 
 router.post("/", (req, res) => {
-  const _id = uuidv4();
-  const _name = req.body.name;
-  const _sinopsis = req.body.sinopsis;
-  const _year = req.body.year;
-  const _cover = req.body.cover;
-  let db = new sqlite3.Database("./movies.db");
-  let resultado = db.run(
-    `insert into peliculas (id, name, year, sinopsis, cover) values(?, ?, ?, ?, ?);`,
-    [_id, _name, _year, _sinopsis, _cover]
-  );
-  res.end("OK");
+  const movie = req.body;
+  movies.push({ ...movie, id: uuidv4() });
+  res.send(`${movies.name} ha sido añadido con éxito`);
 });
 
 //Consultar una película por medio de su id
 
 router.get("/:id", (req, res) => {
   const { id } = req.params;
-
-  let db = new sqlite3.Database("./movies.db");
-  let resultado = db.get(
-    `SELECT * FROM peliculas WHERE id =
-?;`,
-    [id],
-    (err, row) => {
-      if (err) {
-        return console.error(err.message);
-      }
-      if (row) {
-        console.log("Registro encontrado:", row);
-        res.end(JSON.stringify(row));
-      } else {
-        console.log("No se encontró ningún registro.");
-      }
-    }
-  );
+  const movie = movies.find((movies) => movies.id === id);
+  res.send(movie);
 });
 
 //Eliminar una película
 
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
-  let db = new sqlite3.Database("./movies.db");
-  let resultado = db.run(
-    `DELETE from peliculas where id =
-?`,
-    [id]
-  );
-  res.end("OK");
+  const moviesTemp = movies.filter((movies) => movies.id !== id);
+  movies = moviesTemp;
+  res.send(`${id} Fue eliminado con éxito`);
 });
 
 //Actualizar película
 router.patch("/:id", (req, res) => {
   const { id } = req.params;
   const { name, year, sinopsis, cover } = req.body;
-
-  if (name) {
-    let db = new sqlite3.Database("./movies.db");
-    let resultado = db.run(
-      `UPDATE peliculas SET name = ? WHERE id = ?`,
-      [name, id],
-      (err) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log(`Se actualizó el campo nombre con id: ${id}.`);
-      }
-    );
-  }
-  if (year) {
-    let db = new sqlite3.Database("./movies.db");
-    let resultado = db.run(
-      `UPDATE peliculas SET year = ? WHERE id = ?`,
-      [year, id],
-      (err) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log(`Se actualizó el campo year con id: ${id}.`);
-      }
-    );
-  }
-  if (sinopsis) {
-    let db = new sqlite3.Database("./movies.db");
-    let resultado = db.run(
-      `UPDATE peliculas SET sinopsis = ? WHERE id = ?`,
-      [sinopsis, id],
-      (err) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log(`Se actualizó el campo sinopsis con id: ${id}.`);
-      }
-    );
-  }
-  if (cover) {
-    let db = new sqlite3.Database("./movies.db");
-    let resultado = db.run(
-      `UPDATE peliculas SET cover = ? WHERE id = ?`,
-      [cover, id],
-      (err) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log(`Se actualizó el campo nombre con id: ${id}.`);
-      }
-    );
-  }
-
+  let movieTemp = movies.find((movies) => movies.id === id);
+  if (name) movieTemp.name = name;
+  if (year) movieTemp.year = year;
+  if (sinopsis) movieTemp.sinopsis = sinopsis;
+  if (cover) movieTemp.cover = cover;
   res.send(`Película con ID: ${id} fue actualizada con éxito`);
 });
 
